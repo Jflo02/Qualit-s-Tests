@@ -3,7 +3,7 @@ import { z } from "zod";
 import { createUserInRepository } from "./user.repository";
 import { calculateAge } from "../../../shared/utils";
 
-export const MAX_USER_AGE = 18;
+export const MIN_USER_AGE = 18;
 
 const UserSchema = z.object({
   name: z.string().min(2),
@@ -16,7 +16,7 @@ export async function createUser(data) {
   if (result.success) {
     const age = calculateAge(result.data.birthday);
 
-    if (age < MAX_USER_AGE) {
+    if (age < MIN_USER_AGE) {
       throw new HttpForbidden("User is too young.");
     }
     return createUserInRepository(result.data);

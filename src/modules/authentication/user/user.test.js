@@ -1,4 +1,4 @@
-import { describe, it, afterEach } from "vitest";
+import { describe, it, afterEach, beforeEach } from "vitest";
 import { vi } from "vitest";
 import { createUser } from "./user.service";
 import { expect } from "vitest";
@@ -17,7 +17,16 @@ vi.mock("./user.repository", async (importOriginal) => ({
 
 describe("User Service", () => {
 
-  afterEach(() => vi.clearAllMocks())
+  beforeEach(() => {
+    // tell vitest we use mocked time
+    vi.useFakeTimers()
+  })
+
+
+  afterEach(() => {
+    vi.clearAllMocks()
+    vi.useRealTimers()
+})
 
   it("should create an user", async () => {
     const user = await createUser({
@@ -49,6 +58,20 @@ describe("User Service", () => {
     } catch (e) {
       expect(e.name).toBe('HttpBadRequest');
       expect(e.statusCode).toBe(400);
+    }
+  });
+  it("should trigger a bad request error when user is too young", async () => {
+    try {
+      const date = new Date(2000, 1, 1, 13)
+      vi.setSystemTime(date)
+      await createUser({
+        name: "Valentin R",
+        birthday: new Date(1997, 8, 13),
+      });
+      assert.fail("createUser should trigger an error.");
+    } catch (e) {
+      expect(e.name).toBe('HttpForbidden');
+      expect(e.statusCode).toBe(403);
     }
   });
 });
