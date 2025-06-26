@@ -1,0 +1,10 @@
+const assert = require('assert');
+
+test('example async test', async () => {
+    try {
+        const result = await someAsyncFunction();
+        assert.strictEqual(result, expectedValue);
+    } catch (error) {
+        assert.fail(`Test failed due to unhandled error: ${error.message}`);
+    }
+});
