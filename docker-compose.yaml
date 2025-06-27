@@ -1,12 +1,15 @@
 services:
   postgres:
     image: postgres
-    ports:
-      - 5432:5432
-    volumes:
-      - ./sql/data:/var/lib/postgresql/data
-      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql
     environment:
       - POSTGRES_PASSWORD=password
       - POSTGRES_USER=user
       - POSTGRES_DB=mydb
+    ports:
+      - 5432:5432
+    volumes:
+      - /sql/data:/var/lib/postgresql/data
+      - "D:\Epsi\I2\tests\Qualit-s-Tests/sql/init.sql:/docker-entrypoint-initdb.d/init.sql"
+    
+
+docker run -p 5432:5432 -e POSTGRES_USER=user -e POSTGRES_PASSWORD=password -e POSTGRES_DB=mydb -v "D:\Epsi\I2\tests\Qualit-s-Tests/sql/init.sql:/docker-entrypoint-initdb.d/init.sql" -d postgres
