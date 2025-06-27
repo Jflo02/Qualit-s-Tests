@@ -25,3 +25,6 @@ dist-ssr
 
 # sql data
 sql/data/**
+
+# coverage
+coverage
