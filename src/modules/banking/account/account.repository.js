@@ -30,3 +30,18 @@ export async function deleteAccountFromRepository(accountId, userId) {
 
   return result[0];
 }
+
+export async function updateAccountInRepository(accountId, amountToAdd) {
+
+    const result = await sql`
+    UPDATE accounts
+    SET amount = amount + ${amountToAdd}
+    WHERE id = ${accountId}
+    RETURNING *
+    `;
+    if (result.length === 0) {
+        throw new Error("Account not found");
+    }
+    return result[0];
+}
+    

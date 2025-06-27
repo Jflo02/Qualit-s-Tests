@@ -1,6 +1,6 @@
 import { HttpBadRequest } from "@httpx/exception";
 import { z } from "zod";
-import { createAccountInRepository, getAccountsFromRepository, deleteAccountFromRepository } from "./account.repository";
+import { createAccountInRepository, getAccountsFromRepository, deleteAccountFromRepository, updateAccountInRepository } from "./account.repository";
 
 const AccountSchema = z.object({
   userId: z.number().int().positive(),
@@ -35,4 +35,16 @@ export async function deleteAccount(accountId, userId) {
   }
 
   return deleteAccountFromRepository(accountId, userId);
+}
+
+export async function patchAccount(accountId, amount) {
+  if (!accountId || typeof accountId !== 'number') {
+    throw new HttpBadRequest("Invalid account ID");
+  }
+  
+  if (typeof amount !== 'number') {
+    throw new HttpBadRequest("Invalid amount");
+  }
+
+  return updateAccountInRepository(accountId, amount);
 }

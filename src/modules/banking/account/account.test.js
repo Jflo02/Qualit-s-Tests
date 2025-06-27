@@ -1,11 +1,17 @@
 import { describe, it, afterEach } from "vitest";
 import { vi } from "vitest";
-import { createAccount, getAccounts, deleteAccount } from "./account.service";
+import {
+  createAccount,
+  getAccounts,
+  deleteAccount,
+  patchAccount,
+} from "./account.service";
 import { expect } from "vitest";
 import {
   createAccountInRepository,
   getAccountsFromRepository,
   deleteAccountFromRepository,
+  updateAccountInRepository,
 } from "./account.repository";
 import { HttpBadRequest } from "@httpx/exception";
 
@@ -14,6 +20,13 @@ vi.mock("./account.repository", async (importOriginal) => ({
   createAccountInRepository: vi.fn((data) => {
     return {
       id: 4,
+      userId: data.userId,
+      amount: data.amount,
+    };
+  }),
+  updateAccountInRepository: vi.fn((data) => {
+    return {
+      id: data.id,
       userId: data.userId,
       amount: data.amount,
     };
@@ -130,5 +143,68 @@ describe("Account Service", () => {
     expect(accounts).toBeDefined();
     expect(accounts).toBeInstanceOf(Array);
     expect(accounts.length).toBe(0);
+  });
+
+  it("should patch an account with positive amount", async () => {
+    const userId = 4;
+    const initialAmount = 100.0;
+    const amountToAdd = 50.0;
+
+    const account = await createAccount({
+      userId: userId,
+      amount: initialAmount,
+    });
+
+    updateAccountInRepository.mockImplementationOnce(() => ({
+      id: 4,
+      userId: userId,
+      amount: initialAmount + amountToAdd,
+    }));
+
+    const updatedAccount = await patchAccount(account.id, 50.0);
+
+    expect(updatedAccount).toBeDefined();
+    expect(updatedAccount.id).toBe(account.id);
+    expect(updatedAccount.amount).toBe(150.0);
+    expect(updateAccountInRepository).toBeCalledTimes(1);
+    expect(updateAccountInRepository).toBeCalledWith(account.id, 50.0);
+
+  });
+
+    it("should patch an account with negative amount", async () => {
+    const userId = 4;
+    const initialAmount = 100.0;
+    const amountToAdd = -50.0;
+
+    const account = await createAccount({
+      userId: userId,
+      amount: initialAmount,
+    });
+
+    updateAccountInRepository.mockImplementationOnce(() => ({
+      id: 4,
+      userId: userId,
+      amount: initialAmount - amountToAdd,
+    }));
+
+    const updatedAccount = await patchAccount(account.id, 50.0);
+
+    expect(updatedAccount).toBeDefined();
+    expect(updatedAccount.id).toBe(account.id);
+    expect(updatedAccount.amount).toBe(150.0);
+    expect(updateAccountInRepository).toBeCalledTimes(1);
+    expect(updateAccountInRepository).toBeCalledWith(account.id, 50.0);
+  });
+
+  it("it should trigger a bad request error when patching an account with invalid account ID", async () => {
+    await expect(patchAccount(null, 50.0)).rejects.toThrowError(
+      new HttpBadRequest("Invalid account ID")
+    );
+  });
+
+  it("it should trigger a bad request error when patching an account with invalid amount", async () => {
+    await expect(patchAccount(1, "invalid")).rejects.toThrowError(
+      new HttpBadRequest("Invalid amount")
+    );
   });
 });
